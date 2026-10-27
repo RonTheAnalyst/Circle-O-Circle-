@@ -3,277 +3,490 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Area of a Circle Simulation</title>
+    <title>Area of a Circle: Infinity Proof</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #f3f4f6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
         }
-        .container {
-            max-width: 56rem;
+        .canvas-container {
             width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        h1 {
-            font-size: 1.875rem;
-            font-weight: 800;
-            color: #1f2937;
-            margin: 0 0 0.5rem 0;
-            text-align: center;
-        }
-        .description {
-            color: #4b5563;
-            margin: 0 0 1.5rem 0;
-            text-align: center;
-            line-height: 1.5;
-        }
-        .button-group {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-        button {
-            padding: 0.5rem 1.5rem;
-            color: #ffffff;
-            border-radius: 0.5rem;
-            font-weight: 700;
-            font-size: 1rem;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        #playPauseBtn { background-color: #2563eb; }
-        #playPauseBtn:hover { background-color: #1d4ed8; }
-        #nextBtn { background-color: #16a34a; }
-        #nextBtn:hover { background-color: #15803d; }
-        #resetBtn { background-color: #6b7280; }
-        #resetBtn:hover { background-color: #4b5563; }
-        
-        #statusText {
-            font-size: 1.25rem;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            margin-bottom: 1rem;
-            color: #374151;
-            font-weight: 700;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
         }
         canvas {
-            display: block;
-            margin: 0 auto;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            max-width: 100%;
+            width: 100%;
             height: auto;
+            display: block;
+        }
+        .btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        /* Formula card animation */
+        .formula-card {
+            opacity: 0;
+            transform: translateY(20px) translateX(-50%);
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+        .formula-card.visible {
+            opacity: 1;
+            transform: translateY(0) translateX(-50%);
+            pointer-events: auto;
         }
     </style>
 </head>
-<body>
-    
-    <div class="container">
-        <h1>Area of a Circle: Unrolling into a Rectangle</h1>
-        <p class="description">Watch how dividing a circle into smaller slices approaches a perfect rectangle with width = πr and height = r, proving Area = πr².</p>
+<body class="text-slate-800 min-h-screen flex flex-col items-center py-10 px-4">
+
+    <div class="max-w-6xl w-full">
         
-        <div class="button-group">
-            <button id="playPauseBtn">Play</button>
-            <button id="nextBtn">Next Step</button>
-            <button id="resetBtn">Reset</button>
+        <!-- Header & Explanatory Text -->
+        <header class="text-center mb-6">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">The Infinity Proof: Area of a Circle</h1>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 max-w-4xl mx-auto shadow-sm min-h-[100px] flex flex-col justify-center items-center transition-all duration-300">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full uppercase tracking-wider">Status</span>
+                    <span class="text-slate-500 font-semibold">Slices: <span id="sliceCountLabel" class="text-blue-700 text-xl font-bold ml-1">4</span></span>
+                </div>
+                <p id="explanationText" class="text-lg md:text-xl text-blue-900 font-medium text-center m-0 transition-opacity duration-300"></p>
+            </div>
+        </header>
+
+        <!-- Controls -->
+        <div class="flex justify-center gap-4 mb-6">
+            <button id="btnTogglePlay" class="btn bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-indigo-200 flex items-center gap-2 text-lg w-48 justify-center">
+                <svg id="playIcon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"/></svg>
+                <svg id="pauseIcon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"/></svg>
+                <span id="playText">Play</span>
+            </button>
+            <button id="btnNext" class="btn bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-bold py-3 px-8 rounded-xl shadow-sm flex items-center gap-2 text-lg">
+                Next Step <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            </button>
+            <button id="btnReset" class="btn bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold py-3 px-8 rounded-xl shadow-sm text-lg">
+                Reset
+            </button>
         </div>
-        
-        <div id="statusText">Slices: 4</div>
-        
-        <canvas id="simCanvas" width="900" height="500"></canvas>
+
+        <!-- Canvas Area -->
+        <div class="canvas-container border border-slate-200">
+            <canvas id="simCanvas" width="1200" height="500"></canvas>
+            
+            <!-- Floating Formula Conclusion -->
+            <div id="conclusionOverlay" class="formula-card absolute bottom-10 left-[68%] bg-white/95 backdrop-blur-md p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 z-10 w-80 text-center">
+                <h3 class="text-2xl font-black text-indigo-900 mb-3 border-b border-indigo-100 pb-2">Final Formula</h3>
+                <div class="space-y-3 text-lg font-medium text-slate-700 text-left">
+                    <div class="flex justify-between">
+                        <span>Height:</span> <span class="text-indigo-600 font-bold">r</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Width:</span> <span class="text-indigo-600 font-bold">π × r</span>
+                    </div>
+                    <div class="flex justify-between pt-3 text-2xl border-t border-indigo-100 mt-2">
+                        <span>Area:</span> <span class="text-indigo-700 font-black">πr²</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
-        const statusText = document.getElementById('statusText');
+        const textEl = document.getElementById('explanationText');
+        const sliceCountEl = document.getElementById('sliceCountLabel');
+        const overlay = document.getElementById('conclusionOverlay');
+        
+        const btnTogglePlay = document.getElementById('btnTogglePlay');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        const playText = document.getElementById('playText');
+
+        // Sequence Settings
+        const SLICE_COUNTS = [4, 8, 16, 32, 64, 128, 256, 512, 1024];
+        
+        // Geometry Constants
+        const W = canvas.width;
+        const H = canvas.height;
+        const R = 150;
+        const CX = 250; // Circle left side
+        const CY = 250;
+        const RX = 850; // Rect right side
+        const RY = 250;
+
+        // State Machine Variables
+        let sliceIndex = 0;
+        let phase = 'CIRCLE_WAIT'; // CIRCLE_WAIT, UNROLLING, RECT_WAIT, MORPHING, DONE
+        let animProgress = 0; 
+        let timer = 0;
         
         let isPlaying = false;
-        let slices = 4;
-        const maxSlices = 2048; 
-        let progress = 0; 
-        
-        // Animation States: 'CIRCLE' -> 'UNROLLING' -> 'RECTANGLE' -> 'MORPHING_TO_CIRCLE'
-        let state = 'CIRCLE'; 
-        
-        const R = 120; 
-        const circleCenter = { x: 450, y: 150 };
-        const rectCenter = { x: 450, y: 400 };
+        let lastTime = 0;
 
-        function drawWedge(cx, cy, radius, startAngle, endAngle, color) {
+        function easeInOutCubic(x) {
+            return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+        }
+
+        // Ensures slices take the shortest rotational path
+        function closestAngle(current, target) {
+            let diff = (target - current) % (Math.PI * 2);
+            if (diff > Math.PI) diff -= Math.PI * 2;
+            if (diff < -Math.PI) diff += Math.PI * 2;
+            return current + diff;
+        }
+
+        function updateUI() {
+            let text = "";
+            let N = SLICE_COUNTS[sliceIndex];
+            
+            if (phase === 'CIRCLE_WAIT') text = `Step ${sliceIndex + 1}: The circle is divided into ${N} equal slices.`;
+            else if (phase === 'UNROLLING') text = `Slowly unrolling and rearranging the ${N} slices...`;
+            else if (phase === 'RECT_WAIT') text = `Arranged! The shape is starting to resemble a rectangle.`;
+            else if (phase === 'MORPHING') text = `As we approach an INFINITE number of slices...`;
+            else if (phase === 'DONE') text = `A perfect rectangle is formed! Area = πr × r = πr²`;
+            
+            textEl.innerText = text;
+            sliceCountEl.innerText = (phase === 'MORPHING' || phase === 'DONE') ? '∞ (Infinity)' : N;
+
+            overlay.classList.toggle('visible', phase === 'DONE');
+            
+            // Update Toggle Button
+            if (isPlaying) {
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+                playText.innerText = 'Pause';
+            } else {
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+                playText.innerText = 'Play';
+            }
+        }
+
+        function drawBackgroundGuides() {
+            // Ghost Circle
             ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.arc(cx, cy, radius, startAngle, endAngle);
-            ctx.closePath();
-            ctx.fillStyle = color;
-            ctx.fill();
-            ctx.lineWidth = 0.5;
-            ctx.strokeStyle = '#ffffff';
+            ctx.arc(CX, CY, R, 0, Math.PI * 2);
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 6]);
             ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Center Dot
+            ctx.beginPath();
+            ctx.arc(CX, CY, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#94a3b8';
+            ctx.fill();
+
+            // Ghost Radius Line
+            ctx.beginPath();
+            ctx.moveTo(CX, CY);
+            ctx.lineTo(CX + R, CY);
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            ctx.font = 'italic bold 18px Inter';
+            ctx.fillStyle = '#64748b';
+            ctx.textAlign = 'center';
+            ctx.fillText('r', CX + R/2, CY - 10);
+        }
+
+        // Draws the mathematical labels surrounding the rectangle
+        function drawRectAnnotations(opacity, isPerfect) {
+            if (opacity <= 0) return;
+            ctx.save();
+            ctx.globalAlpha = opacity;
+            ctx.strokeStyle = '#475569';
+            ctx.fillStyle = '#1e293b';
+            ctx.lineWidth = 2;
+            ctx.font = 'bold 18px Inter, sans-serif';
+
+            const perfectW = Math.PI * R;
+            const startX = RX - perfectW / 2;
+            
+            // Height Line (Right side)
+            const hX = startX + perfectW + 40;
+            ctx.beginPath();
+            ctx.moveTo(hX, RY - R/2);
+            ctx.lineTo(hX, RY + R/2);
+            ctx.stroke();
+            
+            // End caps
+            ctx.beginPath();
+            ctx.moveTo(hX - 6, RY - R/2); ctx.lineTo(hX + 6, RY - R/2);
+            ctx.moveTo(hX - 6, RY + R/2); ctx.lineTo(hX + 6, RY + R/2);
+            ctx.stroke();
+            
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('r', hX + 12, RY);
+
+            // Width Line (Bottom side)
+            const wY = RY + R/2 + 40;
+            ctx.beginPath();
+            ctx.moveTo(startX, wY);
+            ctx.lineTo(startX + perfectW, wY);
+            ctx.stroke();
+            
+            // End caps
+            ctx.beginPath();
+            ctx.moveTo(startX, wY - 6); ctx.lineTo(startX, wY + 6);
+            ctx.moveTo(startX + perfectW, wY - 6); ctx.lineTo(startX + perfectW, wY + 6);
+            ctx.stroke();
+            
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(isPerfect ? 'π × r' : '≈ π × r (Approaching πr)', RX, wY + 12);
+
+            ctx.restore();
+        }
+
+        function drawSlices(N, progress) {
+            const theta = (Math.PI * 2) / N;
+            const C = 2 * R * Math.sin(theta / 2);
+            const H_tri = R * Math.cos(theta / 2);
+            const RectW = (N / 2) * C;
+            const startX = RX - RectW / 2;
+            const ease = easeInOutCubic(progress);
+
+            for (let i = 0; i < N; i++) {
+                const isEven = i % 2 === 0;
+
+                // Circle origin
+                const cx = CX;
+                const cy = CY;
+                const crot = (i + 0.5) * theta;
+
+                // Rectangle target
+                let rx, ry, rrot;
+                if (isEven) {
+                    rx = startX + (i / 2) * C + C / 2;
+                    ry = RY + H_tri / 2;
+                    rrot = closestAngle(crot, -Math.PI / 2);
+                } else {
+                    rx = startX + Math.floor(i / 2) * C + C;
+                    ry = RY - H_tri / 2;
+                    rrot = closestAngle(crot, Math.PI / 2);
+                }
+
+                // Interpolate
+                const x = cx + (rx - cx) * ease;
+                const y = cy + (ry - cy) * ease;
+                const rot = crot + (rrot - crot) * ease;
+
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rot);
+
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, R, -theta / 2, theta / 2);
+                ctx.closePath();
+
+                ctx.fillStyle = isEven ? '#3b82f6' : '#60a5fa'; 
+                ctx.fill();
+                
+                // Add visible chop lines for lower N values
+                if (N <= 128) {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.lineWidth = N <= 32 ? 1.5 : 0.5;
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        function drawInfinityMorph() {
+            const perfectW = Math.PI * R;
+            const startX = RX - perfectW / 2;
+            const startY = RY - R / 2;
+
+            ctx.save();
+            ctx.globalAlpha = animProgress; // Crossfade to solid rectangle
+            
+            // Solid Rectangle overlay
+            ctx.fillStyle = '#4f46e5'; 
+            ctx.shadowColor = 'rgba(79, 70, 229, 0.5)';
+            ctx.shadowBlur = 25;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 10;
+            
+            ctx.fillRect(startX, startY, perfectW, R);
+            
+            ctx.strokeStyle = '#312e81';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(startX, startY, perfectW, R);
+            
+            // Equation drawn right in the middle of the block
+            if (animProgress > 0.5) {
+                ctx.globalAlpha = (animProgress - 0.5) * 2;
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 32px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.shadowBlur = 0; // Turn off shadow for text crispness
+                ctx.fillText('Area = πr²', RX, RY);
+            }
+
+            ctx.restore();
         }
 
         function render() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const sliceAngle = (2 * Math.PI) / slices;
-            const rectWidth = Math.PI * R;
-            const wedgeBaseWidth = rectWidth / (slices / 2);
-            const startX = rectCenter.x - rectWidth / 2;
+            ctx.clearRect(0, 0, W, H);
+            drawBackgroundGuides();
 
-            for (let i = 0; i < slices; i++) {
-                const color = i % 2 === 0 ? '#3b82f6' : '#60a5fa';
-                
-                const currentAngle = i * sliceAngle;
-                const isBottom = i % 2 === 0;
-                let targetX, targetY, targetStartAngle;
-                
-                if (isBottom) {
-                    targetX = startX + (i / 2) * wedgeBaseWidth + wedgeBaseWidth / 2;
-                    targetY = rectCenter.y + R / 2; 
-                    targetStartAngle = -Math.PI / 2 - sliceAngle / 2;
-                } else {
-                    targetX = startX + Math.floor(i / 2) * wedgeBaseWidth + wedgeBaseWidth;
-                    targetY = rectCenter.y - R / 2; 
-                    targetStartAngle = Math.PI / 2 - sliceAngle / 2;
-                }
+            let N = SLICE_COUNTS[sliceIndex];
 
-                let x = circleCenter.x;
-                let y = circleCenter.y;
-                let t = 0;
-                
-                if (state === 'UNROLLING' || state === 'MORPHING_TO_CIRCLE') {
-                    const delay = i * (0.5 / slices);
-                    let rawT = (progress - delay) * 2; 
-                    t = Math.max(0, Math.min(1, rawT));
-                    t = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; 
-                    if (state === 'MORPHING_TO_CIRCLE') t = 1 - t;
-                } else if (state === 'RECTANGLE') {
-                    t = 1;
-                }
-
-                x = circleCenter.x + (targetX - circleCenter.x) * t;
-                y = circleCenter.y + (targetY - circleCenter.y) * t;
-                let currentRot = currentAngle + (targetStartAngle - currentAngle) * t;
-                
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate(currentRot + sliceAngle / 2);
-                drawWedge(0, 0, R, -sliceAngle / 2, sliceAngle / 2, color);
-                ctx.restore();
-            }
-
-            if (state === 'RECTANGLE' && progress > 0.8) {
-                ctx.fillStyle = '#374151';
-                ctx.font = '16px monospace';
-                ctx.fillText('Height = r', startX - 100, rectCenter.y + 5);
-                ctx.fillText('Width = πr', rectCenter.x - 40, rectCenter.y + R / 2 + 30);
-                
-                if (slices >= 256) {
-                    ctx.font = 'bold 24px sans-serif';
-                    ctx.fillStyle = '#111827';
-                    ctx.fillText('Area = (πr) × r = πr²', rectCenter.x - 110, rectCenter.y - R - 30);
-                }
+            if (phase === 'CIRCLE_WAIT') {
+                drawSlices(N, 0);
+            } 
+            else if (phase === 'UNROLLING') {
+                drawSlices(N, animProgress);
+            } 
+            else if (phase === 'RECT_WAIT') {
+                drawSlices(N, 1);
+                drawRectAnnotations(1, false);
+            } 
+            else if (phase === 'MORPHING' || phase === 'DONE') {
+                // Keep the last N slices as the background base, morph the perfect rect on top
+                drawSlices(SLICE_COUNTS[SLICE_COUNTS.length - 1], 1); 
+                drawInfinityMorph();
+                drawRectAnnotations(1, true);
             }
         }
 
-        let animationId;
-        let lastTime = 0;
-        
-        function animate(time) {
-            if (!lastTime) lastTime = time;
-            const delta = time - lastTime;
-            lastTime = time;
+        function updateLogic(dt) {
+            switch (phase) {
+                case 'CIRCLE_WAIT':
+                    timer += dt;
+                    if (timer > 1500) { // Wait 1.5 seconds to observe chopped circle
+                        phase = 'UNROLLING';
+                        animProgress = 0;
+                        updateUI();
+                    }
+                    break;
+                case 'UNROLLING':
+                    animProgress += dt / 3000; // 3 seconds to unroll
+                    if (animProgress >= 1) {
+                        animProgress = 1;
+                        phase = 'RECT_WAIT';
+                        timer = 0;
+                        updateUI();
+                    }
+                    break;
+                case 'RECT_WAIT':
+                    timer += dt;
+                    if (timer > 2000) { // Wait 2 seconds to observe rectangle
+                        if (sliceIndex === SLICE_COUNTS.length - 1) {
+                            phase = 'MORPHING';
+                            animProgress = 0;
+                        } else {
+                            sliceIndex++;
+                            phase = 'CIRCLE_WAIT'; // Return to chopped circle for new N
+                            timer = 0;
+                        }
+                        updateUI();
+                    }
+                    break;
+                case 'MORPHING':
+                    animProgress += dt / 2000; // 2 seconds to morph
+                    if (animProgress >= 1) {
+                        animProgress = 1;
+                        phase = 'DONE';
+                        isPlaying = false;
+                        updateUI();
+                    }
+                    break;
+                case 'DONE':
+                    break; // Wait for user interaction
+            }
+        }
+
+        function loop(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const dt = timestamp - lastTime;
+            lastTime = timestamp;
 
             if (isPlaying) {
-                stepAnimation(delta);
+                updateLogic(dt);
             }
-            
+
             render();
-            animationId = requestAnimationFrame(animate);
+            requestAnimationFrame(loop);
         }
 
-        function stepAnimation(delta) {
-            const speed = 0.0008; 
-            
-            if (state === 'CIRCLE') {
-                progress += speed * delta;
-                if (progress > 0.5) {
-                    progress = 0;
-                    state = 'UNROLLING';
-                }
-            } else if (state === 'UNROLLING') {
-                progress += speed * delta * 1.5;
-                if (progress >= 1) {
-                    progress = 1;
-                    state = 'RECTANGLE';
-                }
-            } else if (state === 'RECTANGLE') {
-                progress += speed * delta * 0.5;
-                if (progress > 1.5) {
-                    progress = 0;
-                    if (slices >= maxSlices) {
-                        isPlaying = false;
-                        document.getElementById('playPauseBtn').innerText = 'Done';
-                    } else {
-                        state = 'MORPHING_TO_CIRCLE';
-                    }
-                }
-            } else if (state === 'MORPHING_TO_CIRCLE') {
-                progress += speed * delta * 2;
-                if (progress >= 1) {
-                    slices *= 2;
-                    statusText.innerText = `Slices: ${slices === maxSlices ? '∞ (Approaching infinity)' : slices}`;
-                    progress = 0;
-                    state = 'CIRCLE';
-                }
+        // --- Event Listeners ---
+        
+        btnTogglePlay.addEventListener('click', () => {
+            if (phase === 'DONE') {
+                // Auto-reset if they click play at the end
+                document.getElementById('btnReset').click();
+                isPlaying = true;
+                updateUI();
+                return;
             }
-        }
-
-        document.getElementById('playPauseBtn').addEventListener('click', (e) => {
-            if (slices >= maxSlices && state === 'RECTANGLE') return;
             isPlaying = !isPlaying;
-            e.target.innerText = isPlaying ? 'Pause' : 'Play';
+            updateUI();
         });
 
-        document.getElementById('nextBtn').addEventListener('click', () => {
-            isPlaying = false;
-            document.getElementById('playPauseBtn').innerText = 'Play';
-            if (state === 'CIRCLE') {
-                state = 'UNROLLING'; progress = 1; 
-                setTimeout(() => { state = 'RECTANGLE'; progress = 1; }, 50);
-            } else if (state === 'RECTANGLE') {
-                if (slices < maxSlices) {
-                    slices *= 2;
-                    statusText.innerText = `Slices: ${slices === maxSlices ? '∞' : slices}`;
-                    state = 'CIRCLE';
-                    progress = 0;
+        document.getElementById('btnNext').addEventListener('click', () => {
+            isPlaying = false; // Pause auto-play to allow manual stepping
+            
+            if (phase === 'CIRCLE_WAIT') {
+                phase = 'UNROLLING';
+                animProgress = 0;
+            } 
+            else if (phase === 'UNROLLING') {
+                phase = 'RECT_WAIT';
+                animProgress = 1;
+                timer = 0;
+            } 
+            else if (phase === 'RECT_WAIT') {
+                if (sliceIndex === SLICE_COUNTS.length - 1) {
+                    phase = 'MORPHING';
+                    animProgress = 0;
+                } else {
+                    sliceIndex++;
+                    phase = 'CIRCLE_WAIT';
+                    timer = 0;
                 }
-            } else {
-                state = 'RECTANGLE';
-                progress = 1;
+            } 
+            else if (phase === 'MORPHING') {
+                phase = 'DONE';
+                animProgress = 1;
             }
+            
+            updateUI();
+            render();
         });
 
-        document.getElementById('resetBtn').addEventListener('click', () => {
+        document.getElementById('btnReset').addEventListener('click', () => {
             isPlaying = false;
-            document.getElementById('playPauseBtn').innerText = 'Play';
-            slices = 4;
-            state = 'CIRCLE';
-            progress = 0;
-            statusText.innerText = `Slices: 4`;
+            sliceIndex = 0;
+            phase = 'CIRCLE_WAIT';
+            animProgress = 0;
+            timer = 0;
+            updateUI();
+            render();
         });
 
-        requestAnimationFrame(animate);
+        // Initialize
+        updateUI();
+        requestAnimationFrame(loop);
+
     </script>
 </body>
 </html>
