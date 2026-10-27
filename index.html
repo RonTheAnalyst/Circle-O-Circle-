@@ -4,30 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Area of a Circle Simulation</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        body {
+            background-color: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+        }
+        .container {
+            max-width: 56rem;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            font-size: 1.875rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin: 0 0 0.5rem 0;
+            text-align: center;
+        }
+        .description {
+            color: #4b5563;
+            margin: 0 0 1.5rem 0;
+            text-align: center;
+            line-height: 1.5;
+        }
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        button {
+            padding: 0.5rem 1.5rem;
+            color: #ffffff;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #playPauseBtn { background-color: #2563eb; }
+        #playPauseBtn:hover { background-color: #1d4ed8; }
+        #nextBtn { background-color: #16a34a; }
+        #nextBtn:hover { background-color: #15803d; }
+        #resetBtn { background-color: #6b7280; }
+        #resetBtn:hover { background-color: #4b5563; }
+        
+        #statusText {
+            font-size: 1.25rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            margin-bottom: 1rem;
+            color: #374151;
+            font-weight: 700;
+        }
         canvas {
             display: block;
             margin: 0 auto;
             background: #ffffff;
             border-radius: 12px;
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6 font-sans">
+<body>
     
-    <div class="max-w-4xl w-full flex flex-col items-center">
-        <h1 class="text-3xl font-extrabold text-gray-800 mb-2">Area of a Circle: Unrolling into a Rectangle</h1>
-        <p class="text-gray-600 mb-6 text-center">Watch how dividing a circle into smaller slices approaches a perfect rectangle with width = πr and height = r, proving Area = πr².</p>
+    <div class="container">
+        <h1>Area of a Circle: Unrolling into a Rectangle</h1>
+        <p class="description">Watch how dividing a circle into smaller slices approaches a perfect rectangle with width = πr and height = r, proving Area = πr².</p>
         
-        <div class="flex gap-4 mb-4">
-            <button id="playPauseBtn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold transition">Play</button>
-            <button id="nextBtn" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold transition">Next Step</button>
-            <button id="resetBtn" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 font-bold transition">Reset</button>
+        <div class="button-group">
+            <button id="playPauseBtn">Play</button>
+            <button id="nextBtn">Next Step</button>
+            <button id="resetBtn">Reset</button>
         </div>
         
-        <div class="text-xl font-mono mb-4 text-gray-700 font-bold" id="statusText">Slices: 4</div>
+        <div id="statusText">Slices: 4</div>
         
         <canvas id="simCanvas" width="900" height="500"></canvas>
     </div>
@@ -40,12 +101,12 @@
         let isPlaying = false;
         let slices = 4;
         const maxSlices = 2048; 
-        let progress = 0; // 0 to 1
+        let progress = 0; 
         
         // Animation States: 'CIRCLE' -> 'UNROLLING' -> 'RECTANGLE' -> 'MORPHING_TO_CIRCLE'
         let state = 'CIRCLE'; 
         
-        const R = 120; // Radius
+        const R = 120; 
         const circleCenter = { x: 450, y: 150 };
         const rectCenter = { x: 450, y: 400 };
 
@@ -70,41 +131,31 @@
             const startX = rectCenter.x - rectWidth / 2;
 
             for (let i = 0; i < slices; i++) {
-                const color = i % 2 === 0 ? '#3b82f6' : '#60a5fa'; // Alternating blue colors
+                const color = i % 2 === 0 ? '#3b82f6' : '#60a5fa';
                 
-                // --- Circle Position ---
                 const currentAngle = i * sliceAngle;
-                
-                // --- Rectangle Position ---
                 const isBottom = i % 2 === 0;
                 let targetX, targetY, targetStartAngle;
                 
                 if (isBottom) {
                     targetX = startX + (i / 2) * wedgeBaseWidth + wedgeBaseWidth / 2;
-                    targetY = rectCenter.y + R / 2; // FIXED: Apex at bottom so wedges point UP
+                    targetY = rectCenter.y + R / 2; 
                     targetStartAngle = -Math.PI / 2 - sliceAngle / 2;
                 } else {
                     targetX = startX + Math.floor(i / 2) * wedgeBaseWidth + wedgeBaseWidth;
-                    targetY = rectCenter.y - R / 2; // FIXED: Apex at top so wedges point DOWN
+                    targetY = rectCenter.y - R / 2; 
                     targetStartAngle = Math.PI / 2 - sliceAngle / 2;
                 }
 
-                // --- Interpolation based on state ---
                 let x = circleCenter.x;
                 let y = circleCenter.y;
-                let angleOffset = currentAngle;
-                
-                // Staggered unrolling effect
                 let t = 0;
+                
                 if (state === 'UNROLLING' || state === 'MORPHING_TO_CIRCLE') {
-                    // Delay based on slice index for cascading effect
                     const delay = i * (0.5 / slices);
                     let rawT = (progress - delay) * 2; 
                     t = Math.max(0, Math.min(1, rawT));
-                    
-                    // Ease in out
                     t = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; 
-                    
                     if (state === 'MORPHING_TO_CIRCLE') t = 1 - t;
                 } else if (state === 'RECTANGLE') {
                     t = 1;
@@ -112,11 +163,8 @@
 
                 x = circleCenter.x + (targetX - circleCenter.x) * t;
                 y = circleCenter.y + (targetY - circleCenter.y) * t;
-                
-                // Adjust rotation dynamically
                 let currentRot = currentAngle + (targetStartAngle - currentAngle) * t;
                 
-                // Draw the wedge using translated/rotated context
                 ctx.save();
                 ctx.translate(x, y);
                 ctx.rotate(currentRot + sliceAngle / 2);
@@ -124,14 +172,12 @@
                 ctx.restore();
             }
 
-            // Draw Labels when in rectangle shape
             if (state === 'RECTANGLE' && progress > 0.8) {
                 ctx.fillStyle = '#374151';
                 ctx.font = '16px monospace';
                 ctx.fillText('Height = r', startX - 100, rectCenter.y + 5);
                 ctx.fillText('Width = πr', rectCenter.x - 40, rectCenter.y + R / 2 + 30);
                 
-                // Draw formula if at large slices
                 if (slices >= 256) {
                     ctx.font = 'bold 24px sans-serif';
                     ctx.fillStyle = '#111827';
@@ -157,11 +203,11 @@
         }
 
         function stepAnimation(delta) {
-            const speed = 0.0008; // Adjust overall speed here
+            const speed = 0.0008; 
             
             if (state === 'CIRCLE') {
                 progress += speed * delta;
-                if (progress > 0.5) { // Pause briefly as a circle
+                if (progress > 0.5) {
                     progress = 0;
                     state = 'UNROLLING';
                 }
@@ -172,11 +218,11 @@
                     state = 'RECTANGLE';
                 }
             } else if (state === 'RECTANGLE') {
-                progress += speed * delta * 0.5; // Pause to read
+                progress += speed * delta * 0.5;
                 if (progress > 1.5) {
                     progress = 0;
                     if (slices >= maxSlices) {
-                        isPlaying = false; // Stop at infinite
+                        isPlaying = false;
                         document.getElementById('playPauseBtn').innerText = 'Done';
                     } else {
                         state = 'MORPHING_TO_CIRCLE';
@@ -185,7 +231,7 @@
             } else if (state === 'MORPHING_TO_CIRCLE') {
                 progress += speed * delta * 2;
                 if (progress >= 1) {
-                    slices *= 2; // Chop!
+                    slices *= 2;
                     statusText.innerText = `Slices: ${slices === maxSlices ? '∞ (Approaching infinity)' : slices}`;
                     progress = 0;
                     state = 'CIRCLE';
@@ -193,9 +239,8 @@
             }
         }
 
-        // --- Controls ---
         document.getElementById('playPauseBtn').addEventListener('click', (e) => {
-            if (slices >= maxSlices && state === 'RECTANGLE') return; // Ended
+            if (slices >= maxSlices && state === 'RECTANGLE') return;
             isPlaying = !isPlaying;
             e.target.innerText = isPlaying ? 'Pause' : 'Play';
         });
@@ -203,7 +248,6 @@
         document.getElementById('nextBtn').addEventListener('click', () => {
             isPlaying = false;
             document.getElementById('playPauseBtn').innerText = 'Play';
-            // Instantly jump through states
             if (state === 'CIRCLE') {
                 state = 'UNROLLING'; progress = 1; 
                 setTimeout(() => { state = 'RECTANGLE'; progress = 1; }, 50);
