@@ -76,17 +76,16 @@
                 const currentAngle = i * sliceAngle;
                 
                 // --- Rectangle Position ---
-                // Bottom wedges point UP (even index), Top wedges point DOWN (odd index)
                 const isBottom = i % 2 === 0;
                 let targetX, targetY, targetStartAngle;
                 
                 if (isBottom) {
                     targetX = startX + (i / 2) * wedgeBaseWidth + wedgeBaseWidth / 2;
-                    targetY = rectCenter.y - R / 2; // Apex at top
+                    targetY = rectCenter.y + R / 2; // FIXED: Apex at bottom so wedges point UP
                     targetStartAngle = -Math.PI / 2 - sliceAngle / 2;
                 } else {
                     targetX = startX + Math.floor(i / 2) * wedgeBaseWidth + wedgeBaseWidth;
-                    targetY = rectCenter.y + R / 2; // Apex at bottom
+                    targetY = rectCenter.y - R / 2; // FIXED: Apex at top so wedges point DOWN
                     targetStartAngle = Math.PI / 2 - sliceAngle / 2;
                 }
 
