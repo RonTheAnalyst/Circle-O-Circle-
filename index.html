@@ -213,42 +213,55 @@
             ctx.lineWidth = 2;
             ctx.font = 'bold 18px Inter, sans-serif';
 
+            let N = SLICE_COUNTS[sliceIndex];
+            if (isPerfect) N = 100000;
+            
+            const theta = (Math.PI * 2) / N;
+            const C = isPerfect ? 0 : 2 * R * Math.sin(theta / 2);
+            const H_tri = isPerfect ? R : R * Math.cos(theta / 2);
             const perfectW = Math.PI * R;
-            const startX = RX - perfectW / 2;
+            const RectW = isPerfect ? perfectW : (N / 2) * C;
+            const startX = RX - RectW / 2;
             
-            // Height Line (Right side)
-            const hX = startX + perfectW + 40;
+            // Height Line (Right side - matches slant perfectly)
+            const trX = startX + RectW + 20; 
+            const trY = RY - H_tri / 2;
+            const brX = startX + RectW + C / 2 + 20;
+            const brY = RY + H_tri / 2;
+
             ctx.beginPath();
-            ctx.moveTo(hX, RY - R/2);
-            ctx.lineTo(hX, RY + R/2);
-            ctx.stroke();
+            ctx.moveTo(trX, trY);
+            ctx.lineTo(brX, brY);
             
-            // End caps
-            ctx.beginPath();
-            ctx.moveTo(hX - 6, RY - R/2); ctx.lineTo(hX + 6, RY - R/2);
-            ctx.moveTo(hX - 6, RY + R/2); ctx.lineTo(hX + 6, RY + R/2);
+            // End caps offset perfectly horizontally
+            ctx.moveTo(trX - 6, trY); ctx.lineTo(trX + 6, trY);
+            ctx.moveTo(brX - 6, brY); ctx.lineTo(brX + 6, brY);
             ctx.stroke();
             
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
-            ctx.fillText('r', hX + 12, RY);
+            ctx.fillText('r', (trX + brX) / 2 + 12, RY);
 
             // Width Line (Bottom side)
             const wY = RY + R/2 + 40;
+            const bottomLeftX = startX + C / 2;
+            const bottomRightX = startX + RectW + C / 2;
+            
             ctx.beginPath();
-            ctx.moveTo(startX, wY);
-            ctx.lineTo(startX + perfectW, wY);
+            ctx.moveTo(bottomLeftX, wY);
+            ctx.lineTo(bottomRightX, wY);
             ctx.stroke();
             
             // End caps
             ctx.beginPath();
-            ctx.moveTo(startX, wY - 6); ctx.lineTo(startX, wY + 6);
-            ctx.moveTo(startX + perfectW, wY - 6); ctx.lineTo(startX + perfectW, wY + 6);
+            ctx.moveTo(bottomLeftX, wY - 6); ctx.lineTo(bottomLeftX, wY + 6);
+            ctx.moveTo(bottomRightX, wY - 6); ctx.lineTo(bottomRightX, wY + 6);
             ctx.stroke();
             
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
-            ctx.fillText(isPerfect ? 'π × r' : '≈ π × r (Approaching πr)', RX, wY + 12);
+            const bottomCenterX = (bottomLeftX + bottomRightX) / 2;
+            ctx.fillText(isPerfect ? 'Width = πr' : '≈ π × r (Approaching πr)', bottomCenterX, wY + 12);
 
             ctx.restore();
         }
