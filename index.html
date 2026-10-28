@@ -101,6 +101,14 @@
 
     </div>
 
+    <!-- Floating Logo (Outside Canvas) -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <!-- Using your uploaded GitHub file explicitly -->
+        <img src="MatRon%20Logo.png" 
+             alt="MatRon Logo" 
+             class="w-12 h-12 md:w-14 md:h-14 rounded-xl shadow-lg border border-slate-200 hover:scale-110 transition-transform duration-300 cursor-pointer opacity-90 hover:opacity-100 bg-white">
+    </div>
+
     <script>
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
@@ -231,9 +239,9 @@
 
             ctx.beginPath();
             ctx.moveTo(trX, trY);
-            ctx.lineTo(brX, brY);
+            ctx.lineTo(brX, brY); // Slanted line parallel to edge
             
-            // End caps offset perfectly horizontally
+            // End caps offset horizontally
             ctx.moveTo(trX - 6, trY); ctx.lineTo(trX + 6, trY);
             ctx.moveTo(brX - 6, brY); ctx.lineTo(brX + 6, brY);
             ctx.stroke();
